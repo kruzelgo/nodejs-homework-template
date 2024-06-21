@@ -4,7 +4,7 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node hw-02/index.js",
     "dev": "nodemon index.js",
     "lint": "eslint **/*.js",
     "lint:fix": "eslint --fix **/*.js"

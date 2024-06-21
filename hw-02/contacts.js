@@ -15,7 +15,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const contact = await contactsController.getById(req.params.id);
     if (!contact) {
-      return res.status(404).json({ message: "Not found" });
+      return res.status(404).json({ message: "Contact not found" });
     }
     res.status(200).json(contact);
   } catch (error) {
@@ -44,7 +44,7 @@ router.delete("/:id", async (req, res, next) => {
   try {
     const contact = await contactsController.removeContact(req.params.id);
     if (!contact) {
-      return res.status(404).json({ message: "Not found" });
+      return res.status(404).json({ message: "Contact not found" });
     }
     res.status(200).json({ message: "Contact deleted" });
   } catch (error) {

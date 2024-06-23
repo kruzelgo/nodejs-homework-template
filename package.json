@@ -4,7 +4,7 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "start": "node hw-02/index.js",
+    "start": " node index.js",
     "dev": "nodemon index.js",
     "lint": "eslint **/*.js",
     "lint:fix": "eslint --fix **/*.js"
@@ -14,8 +14,8 @@
     "cross-env": "7.0.3",
     "express": "4.17.1",
     "joi": "^17.13.3",
-    "nanoid": "^5.0.7",
-    "morgan": "1.10.0"
+    "morgan": "1.10.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "eslint": "7.19.0",

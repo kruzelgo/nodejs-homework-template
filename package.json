@@ -4,8 +4,8 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "start": " node index.js",
-    "dev": "nodemon index.js",
+    "start": " node ./index.js",
+    "start:dev": "nodemon./ index.js",
     "lint": "eslint **/*.js",
     "lint:fix": "eslint --fix **/*.js"
   },

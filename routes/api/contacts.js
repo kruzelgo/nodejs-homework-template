@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Contact, validateContact } = require("../../models/contactsManager");
+const { Contact, validateContact } = require("../../models/contactsModel");
 
 router.get("/", async (req, res) => {
   try {

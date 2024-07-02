@@ -12,10 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 mongoose
-  .connect(process.env.DB_HOST, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.DB_HOST)
   .then(() => console.log("Database connection successful"))
   .catch((error) =>
     console.error("Error while establishing connection", error)

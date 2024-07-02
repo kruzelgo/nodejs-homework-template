@@ -30,4 +30,15 @@ const validateContact = (contact) => {
   return schema.validate(contact);
 };
 
-module.exports = { Contact, validateContact };
+const validateContactUpdate = (contact) => {
+  const schema = Joi.object({
+    _id: Joi.string().optional(),
+    name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    phone: Joi.string().required(),
+    favorite: Joi.boolean(),
+  });
+  return schema.validate(contact);
+};
+
+module.exports = { Contact, validateContact, validateContactUpdate };

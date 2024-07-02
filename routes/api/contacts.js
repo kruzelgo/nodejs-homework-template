@@ -1,80 +1,101 @@
 const express = require("express");
 const router = express.Router();
-const contactsManager = require("../../models/contactsManager");
+const { Contact, validateContact } = require("../../models/contactsModel");
+
+const handleErrors = (res, error) => {
+  console.error(error);
+  res.status(500).json({ message: "Internal Server Error" });
+};
 
 router.get("/", async (req, res, next) => {
   try {
-    const contacts = await contactsManager.listContacts();
+    const contacts = await Contact.find();
     res.status(200).json(contacts);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to retrieve contacts" });
+    handleErrors(res, error);
   }
 });
 
 router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const contact = await contactsManager.getContactById(id);
+    const contact = await Contact.findById(id);
     if (!contact) {
-      return res
-        .status(404)
-        .json({ message: `Contact with id ${id} not found` });
+      return res.status(404).json({ message: "Contact not found" });
     }
     res.status(200).json(contact);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to retrieve contact" });
+    handleErrors(res, error);
   }
 });
 
 router.post("/", async (req, res, next) => {
   try {
-    const newContact = await contactsManager.addContact(req.body);
+    const { error } = validateContact(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    const newContact = new Contact(req.body);
+    await newContact.save();
     res.status(201).json(newContact);
   } catch (error) {
-    console.error(error);
-    if (error.message.includes("Validation error")) {
-      res.status(400).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: "Failed to add new contact" });
-    }
+    handleErrors(res, error);
   }
 });
 
 router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await contactsManager.removeContact(id);
-    if (!result) {
-      return res
-        .status(404)
-        .json({ message: `Contact with id ${id} not found` });
+    const contact = await Contact.findByIdAndDelete(id);
+    if (!contact) {
+      return res.status(404).json({ message: "Contact not found" });
     }
     res.status(200).json({ message: "Contact deleted" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to delete contact" });
+    handleErrors(res, error);
   }
 });
 
 router.put("/:id", async (req, res, next) => {
   try {
+    const { error } = validateContact(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
     const { id } = req.params;
-    const updatedContact = await contactsManager.updateContact(id, req.body);
+    const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
     if (!updatedContact) {
-      return res
-        .status(404)
-        .json({ message: `Contact with id ${id} not found` });
+      return res.status(404).json({ message: "Contact not found" });
     }
     res.status(200).json(updatedContact);
   } catch (error) {
-    console.error(error);
-    if (error.message.includes("Validation error")) {
-      res.status(400).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: "Failed to update contact" });
+    handleErrors(res, error);
+  }
+});
+
+router.patch("/:id/favorite", async (req, res, next) => {
+  try {
+    const { favorite } = req.body;
+    if (favorite === undefined) {
+      return res.status(400).json({ message: "Missing field favorite" });
     }
+
+    const { id } = req.params;
+    const updatedContact = await Contact.findByIdAndUpdate(
+      id,
+      { favorite },
+      { new: true }
+    );
+    if (!updatedContact) {
+      return res.status(404).json({ message: "Contact not found" });
+    }
+    res.status(200).json(updatedContact);
+  } catch (error) {
+    handleErrors(res, error);
   }
 });
 

@@ -1,18 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const { Contact, validateContact } = require("../../models/contactsModel");
-
-const handleErrors = (res, error) => {
-  console.error(error);
-  res.status(500).json({ message: "Internal Server Error" });
-};
+const {
+  Contact,
+  validateContact,
+  validateContactUpdate,
+} = require("../../models/contactsModel");
 
 router.get("/", async (req, res, next) => {
   try {
     const contacts = await Contact.find();
     res.status(200).json(contacts);
   } catch (error) {
-    handleErrors(res, error);
+    console.error(error);
+    res.status(500).json({ message: "Failed to retrieve contacts" });
   }
 });
 
@@ -25,7 +25,8 @@ router.get("/:id", async (req, res, next) => {
     }
     res.status(200).json(contact);
   } catch (error) {
-    handleErrors(res, error);
+    console.error(error);
+    res.status(500).json({ message: "Failed to retrieve contact" });
   }
 });
 
@@ -40,7 +41,8 @@ router.post("/", async (req, res, next) => {
     await newContact.save();
     res.status(201).json(newContact);
   } catch (error) {
-    handleErrors(res, error);
+    console.error(error);
+    res.status(500).json({ message: "Failed to add new contact" });
   }
 });
 
@@ -53,19 +55,21 @@ router.delete("/:id", async (req, res, next) => {
     }
     res.status(200).json({ message: "Contact deleted" });
   } catch (error) {
-    handleErrors(res, error);
+    console.error(error);
+    res.status(500).json({ message: "Failed to delete contact" });
   }
 });
 
 router.put("/:id", async (req, res, next) => {
   try {
-    const { error } = validateContact(req.body);
+    const { _id, ...updateData } = req.body;
+    const { error } = validateContactUpdate(updateData);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
 
     const { id } = req.params;
-    const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {
+    const updatedContact = await Contact.findByIdAndUpdate(id, updateData, {
       new: true,
     });
     if (!updatedContact) {
@@ -73,7 +77,8 @@ router.put("/:id", async (req, res, next) => {
     }
     res.status(200).json(updatedContact);
   } catch (error) {
-    handleErrors(res, error);
+    console.error(error);
+    res.status(500).json({ message: "Failed to update contact" });
   }
 });
 
@@ -95,7 +100,8 @@ router.patch("/:id/favorite", async (req, res, next) => {
     }
     res.status(200).json(updatedContact);
   } catch (error) {
-    handleErrors(res, error);
+    console.error(error);
+    res.status(500).json({ message: "Failed to update contact" });
   }
 });
 

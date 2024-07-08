@@ -1,10 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {
-  Contact,
-  validateContact,
-  validateContactUpdate,
-} = require("../../models/contactsModel");
+const { Contact, validateContact } = require("../../models/contactsModel");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -62,8 +58,8 @@ router.delete("/:id", async (req, res, next) => {
 
 router.put("/:id", async (req, res, next) => {
   try {
-    const { _id, ...updateData } = req.body;
-    const { error } = validateContactUpdate(updateData);
+    const { _id, ...updateData } = req.body; // Remove _id before validation
+    const { error } = validateContact(updateData);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }

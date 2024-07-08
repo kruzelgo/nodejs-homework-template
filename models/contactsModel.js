@@ -8,9 +8,11 @@ const contactSchema = new mongoose.Schema({
   },
   email: {
     type: String,
+    required: true,
   },
   phone: {
     type: String,
+    required: true,
   },
   favorite: {
     type: Boolean,
@@ -30,15 +32,4 @@ const validateContact = (contact) => {
   return schema.validate(contact);
 };
 
-const validateContactUpdate = (contact) => {
-  const schema = Joi.object({
-    _id: Joi.string().optional(),
-    name: Joi.string().required(),
-    email: Joi.string().email().required(),
-    phone: Joi.string().required(),
-    favorite: Joi.boolean(),
-  });
-  return schema.validate(contact);
-};
-
-module.exports = { Contact, validateContact, validateContactUpdate };
+module.exports = { Contact, validateContact };

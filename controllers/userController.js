@@ -60,7 +60,7 @@ exports.logout = async (req, res) => {
     const user = req.user;
     user.token = null;
     await user.save();
-    res.status(204).json();
+    res.status(204).json({ message: "Logout successful" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

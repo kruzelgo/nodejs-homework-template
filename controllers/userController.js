@@ -14,11 +14,16 @@ exports.signup = async (req, res) => {
     newUser.setPassword(password);
     await newUser.save();
 
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+    newUser.token = token;
+    await newUser.save();
+
     res.status(201).json({
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
       },
+      token,
     });
   } catch (error) {
     console.error(error);
@@ -57,9 +62,8 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
   try {
-    const user = req.user;
-    user.token = null;
-    await user.save();
+    req.user.token = null;
+    await req.user.save();
     res.status(204).json({ message: "Logout successful" });
   } catch (error) {
     console.error(error);

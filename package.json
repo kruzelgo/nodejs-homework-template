@@ -10,6 +10,7 @@
     "lint:fix": "eslint --fix **/*.js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "cross-env": "7.0.3",
     "dotenv": "^16.4.5",
@@ -17,6 +18,7 @@
     "gravatar": "^1.8.2",
     "jimp": "^0.22.12",
     "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.1",
     "morgan": "^1.10.0",

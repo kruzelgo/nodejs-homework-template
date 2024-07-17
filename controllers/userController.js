@@ -3,44 +3,62 @@ const User = require("../models/user");
 const path = require("path");
 const fs = require("fs/promises");
 const Jimp = require("jimp");
+const { v4: uuidv4 } = require("uuid");
+const gravatar = require("gravatar");
+const { isImageAndTransform } = require("../services/helpers");
 
-exports.signup = async (req, res) => {
+const signup = async (req, res, next) => {
+  const { email, password } = req.body;
+
   try {
-    const { email, password } = req.body;
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(409).json({ message: "Email already in use" });
     }
 
-    const newUser = new User({ email });
+    const avatarURL = req.file
+      ? `/avatars/${req.file.filename}`
+      : gravatar.url(email, { s: "250", d: "retro" }, true);
+
+    const newUser = new User({ email, avatarURL });
     newUser.setPassword(password);
     await newUser.save();
 
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
-    newUser.token = token;
-    await newUser.save();
 
     res.status(201).json({
-      user: {
-        email: newUser.email,
-        subscription: newUser.subscription,
+      status: "success",
+      code: 201,
+      data: {
+        user: {
+          email: newUser.email,
+          subscription: newUser.subscription,
+          avatarURL: newUser.avatarURL,
+        },
+        token,
       },
-      token,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res
+      .status(500)
+      .json({ status: "error", code: 500, message: "Internal server error" });
   }
 };
 
-exports.login = async (req, res) => {
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { email, password } = req.body;
     const user = await User.findOne({ email });
 
     if (!user || !user.validPassword(password)) {
-      return res.status(401).json({ message: "Email or password is wrong" });
+      return res.status(401).json({
+        status: "error",
+        code: 401,
+        message: "Email or password is wrong",
+      });
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -51,64 +69,105 @@ exports.login = async (req, res) => {
     await user.save();
 
     res.status(200).json({
-      token,
-      user: {
-        email: user.email,
-        subscription: user.subscription,
+      status: "success",
+      code: 200,
+      data: {
+        token,
+        user: {
+          email: user.email,
+          subscription: user.subscription,
+          avatarURL: user.avatarURL,
+        },
       },
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res
+      .status(500)
+      .json({ status: "error", code: 500, message: "Internal server error" });
   }
 };
 
-exports.logout = async (req, res) => {
+const logout = async (req, res) => {
   try {
     req.user.token = null;
     await req.user.save();
-    res.status(204).json({ message: "Logout successful" });
+    res
+      .status(204)
+      .json({ status: "success", code: 204, message: "Logout successful" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res
+      .status(500)
+      .json({ status: "error", code: 500, message: "Internal server error" });
   }
 };
 
-exports.getCurrentUser = async (req, res) => {
+const getCurrentUser = async (req, res) => {
   try {
-    const user = req.user;
+    const { email, subscription, avatarURL } = req.user;
     res.status(200).json({
-      email: user.email,
-      subscription: user.subscription,
+      status: "success",
+      code: 200,
+      data: {
+        email,
+        subscription,
+        avatarURL,
+      },
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res
+      .status(500)
+      .json({ status: "error", code: 500, message: "Internal server error" });
   }
 };
 
-exports.updateAvatar = async (req, res) => {
-  const { path: tempUpload, filename } = req.file;
-  const { _id: userId } = req.user;
-
+const updateAvatar = async (req, res) => {
   try {
-    const avatar = await Jimp.read(tempUpload);
-    await avatar.resize(250, 250).writeAsync(tempUpload);
-
-    const avatarsDir = path.join(__dirname, "../public/avatars");
-    if (!(await fs.existsSync(avatarsDir))) {
-      await fs.mkdir(avatarsDir, { recursive: true });
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ status: "error", code: 400, message: "File is required" });
     }
-    const resultUpload = path.join(avatarsDir, filename);
-    await fs.rename(tempUpload, resultUpload);
 
-    const avatarURL = `/avatars/${filename}`;
+    const { id } = req.user;
+    const { path: temporaryPath, filename } = req.file;
+    const fileExtension = path.extname(filename);
+    const newFileName = `${uuidv4()}${fileExtension}`;
+    const newFilePath = path.join(__dirname, "../public/avatars", newFileName);
 
-    await User.findByIdAndUpdate(userId, { avatarURL });
+    const isImageValid = await isImageAndTransform(temporaryPath);
+    if (!isImageValid) {
+      await fs.unlink(temporaryPath);
+      return res
+        .status(400)
+        .json({ status: "error", code: 400, message: "Invalid image file" });
+    }
 
-    res.status(200).json({ avatarURL });
+    await fs.rename(temporaryPath, newFilePath);
+    const avatarURL = `/avatars/${newFileName}`;
+    await User.findByIdAndUpdate(id, { avatarURL });
+
+    res.status(200).json({
+      status: "success",
+      code: 200,
+      data: {
+        avatarURL,
+      },
+    });
   } catch (error) {
-    await fs.unlink(tempUpload);
-    res.status(500).json({ message: "Failed to update avatar" });
+    console.error(error);
+    res
+      .status(500)
+      .json({ status: "error", code: 500, message: "Failed to update avatar" });
   }
+};
+
+module.exports = {
+  signup,
+  login,
+  logout,
+  getCurrentUser,
+  updateAvatar,
 };

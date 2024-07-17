@@ -2,10 +2,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const path = require("path");
 const fs = require("fs/promises");
-const Jimp = require("jimp");
 const { v4: uuidv4 } = require("uuid");
 const gravatar = require("gravatar");
-const { isImageAndTransform } = require("../services/helpers");
 
 const signup = async (req, res, next) => {
   const { email, password } = req.body;
@@ -134,19 +132,21 @@ const updateAvatar = async (req, res) => {
     const { id } = req.user;
     const { path: temporaryPath, filename } = req.file;
     const fileExtension = path.extname(filename);
-    const newFileName = `${uuidv4()}${fileExtension}`;
-    const newFilePath = path.join(__dirname, "../public/avatars", newFileName);
 
-    const isImageValid = await isImageAndTransform(temporaryPath);
-    if (!isImageValid) {
+    const allowedExtensions = [".jpg", ".jpeg", ".png"];
+    if (!allowedExtensions.includes(fileExtension.toLowerCase())) {
       await fs.unlink(temporaryPath);
       return res
         .status(400)
         .json({ status: "error", code: 400, message: "Invalid image file" });
     }
 
+    const newFileName = `${uuidv4()}${fileExtension}`;
+    const newFilePath = path.join(__dirname, "../public/avatars", newFileName);
+
     await fs.rename(temporaryPath, newFilePath);
     const avatarURL = `/avatars/${newFileName}`;
+
     await User.findByIdAndUpdate(id, { avatarURL });
 
     res.status(200).json({

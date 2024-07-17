@@ -1,5 +1,8 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const path = require("path");
+const fs = require("fs/promises");
+const Jimp = require("jimp");
 
 exports.signup = async (req, res) => {
   try {
@@ -81,5 +84,31 @@ exports.getCurrentUser = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.updateAvatar = async (req, res) => {
+  const { path: tempUpload, filename } = req.file;
+  const { _id: userId } = req.user;
+
+  try {
+    const avatar = await Jimp.read(tempUpload);
+    await avatar.resize(250, 250).writeAsync(tempUpload);
+
+    const avatarsDir = path.join(__dirname, "../public/avatars");
+    if (!(await fs.existsSync(avatarsDir))) {
+      await fs.mkdir(avatarsDir, { recursive: true });
+    }
+    const resultUpload = path.join(avatarsDir, filename);
+    await fs.rename(tempUpload, resultUpload);
+
+    const avatarURL = `/avatars/${filename}`;
+
+    await User.findByIdAndUpdate(userId, { avatarURL });
+
+    res.status(200).json({ avatarURL });
+  } catch (error) {
+    await fs.unlink(tempUpload);
+    res.status(500).json({ message: "Failed to update avatar" });
   }
 };

@@ -15,9 +15,7 @@ const signup = async (req, res, next) => {
       return res.status(409).json({ message: "Email already in use" });
     }
 
-    const avatarURL = req.file
-      ? `/avatars/${req.file.filename}`
-      : gravatar.url(email, { s: "250", d: "retro" }, true);
+    const avatarURL = gravatar.url(email, { s: "250", d: "retro" }, true);
 
     const newUser = new User({ email, avatarURL });
     newUser.setPassword(password);
@@ -131,17 +129,7 @@ const updateAvatar = async (req, res) => {
 
     const { id } = req.user;
     const { path: temporaryPath, filename } = req.file;
-    const fileExtension = path.extname(filename);
-
-    const allowedExtensions = [".jpg", ".jpeg", ".png"];
-    if (!allowedExtensions.includes(fileExtension.toLowerCase())) {
-      await fs.unlink(temporaryPath);
-      return res
-        .status(400)
-        .json({ status: "error", code: 400, message: "Invalid image file" });
-    }
-
-    const newFileName = `${uuidv4()}${fileExtension}`;
+    const newFileName = `${uuidv4()}${path.extname(filename)}`;
     const newFilePath = path.join(__dirname, "../public/avatars", newFileName);
 
     await fs.rename(temporaryPath, newFilePath);

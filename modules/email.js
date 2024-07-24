@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+const nodemailer = require("nodemailer");
 
 const { M_USER, M_PASS } = process.env;
 
@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async ({ to, subject, html }) => {
   const mailOptions = {
-    from: '"Mail Mail" <mailgun@com.com>',
+    from: '"Szkola Node" <szkola@gmail.com>',
     to,
     subject,
     html,
@@ -22,10 +22,10 @@ const sendEmail = async ({ to, subject, html }) => {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.response);
+    console.log(info);
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error sending email: ", error);
   }
 };
 
-export default sendEmail;
+module.exports = sendEmail;

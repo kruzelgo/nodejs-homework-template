@@ -4,6 +4,7 @@
   "private": true,
   "main": "index.js",
   "scripts": {
+    "type": "module",
     "start": " node ./index.js",
     "start:dev": "nodemon index.js",
     "lint": "eslint **/*.js",

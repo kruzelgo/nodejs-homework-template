@@ -11,5 +11,7 @@ router.post("/signup", validateSignup, userController.signup);
 router.post("/login", validateLogin, userController.login);
 router.get("/logout", auth, userController.logout);
 router.get("/current", auth, userController.getCurrentUser);
+router.get("/verify/:verificationToken", userController.verifyEmail);
+router.post("/verify", userController.resendVerificationEmail);
 
 module.exports = router;

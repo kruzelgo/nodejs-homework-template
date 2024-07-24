@@ -38,7 +38,7 @@ const signup = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Signup error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -58,7 +58,7 @@ const verifyEmail = async (req, res) => {
 
     res.status(200).json({ message: "Verification successful" });
   } catch (error) {
-    console.error(error);
+    console.error("Verification error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -91,7 +91,7 @@ const resendVerificationEmail = async (req, res) => {
 
     res.status(200).json({ message: "Verification email sent" });
   } catch (error) {
-    console.error(error);
+    console.error("Resend email error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -124,7 +124,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -135,7 +135,7 @@ const logout = async (req, res) => {
     await req.user.save();
     res.status(204).json({ message: "Logout successful" });
   } catch (error) {
-    console.error(error);
+    console.error("Logout error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -148,7 +148,7 @@ const getCurrentUser = async (req, res) => {
       subscription: user.subscription,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get current user error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -46,19 +46,24 @@ const signup = async (req, res) => {
 const verifyEmail = async (req, res) => {
   try {
     const { verificationToken } = req.params;
+    console.log("Received verificationToken:", verificationToken);
+
     const user = await User.findOne({ verificationToken });
+    console.log("User found:", user);
 
     if (!user) {
+      console.log("User not found");
       return res.status(404).json({ message: "User not found" });
     }
 
     user.verify = true;
-    user.verificationToken = null;
+    delete user.verificationToken;
     await user.save();
+    console.log("User updated:", user);
 
     res.status(200).json({ message: "Verification successful" });
   } catch (error) {
-    console.error("Verification error:", error);
+    console.error("Error during verification:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -6,17 +6,12 @@ const {
   validateLogin,
 } = require("../../middlewares/validation");
 const auth = require("../../middlewares/auth");
-const upload = require("../../middlewares/upload");
 
 router.post("/signup", validateSignup, userController.signup);
 router.post("/login", validateLogin, userController.login);
 router.get("/logout", auth, userController.logout);
 router.get("/current", auth, userController.getCurrentUser);
-router.patch(
-  "/avatars",
-  auth,
-  upload.single("avatar"),
-  userController.updateAvatar
-);
+router.get("/verify/:verificationToken", userController.verifyEmail);
+router.post("/verify", userController.resendVerificationEmail);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const { Schema, model } = mongoose;
 const bcrypt = require("bcryptjs");
+const { Schema, model } = mongoose;
 
 const userSchema = new Schema({
   password: {
@@ -21,7 +21,11 @@ const userSchema = new Schema({
     type: String,
     default: null,
   },
-  avatarURL: {
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
     type: String,
     default: null,
   },

@@ -3,5 +3,4 @@ node_modules/
 .idea
 .vscodenode_modules
 simple-express/
-public/
-tmp/
+ public/avatars/
